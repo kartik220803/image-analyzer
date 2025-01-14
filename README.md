@@ -49,12 +49,13 @@ The application should now be running at http://localhost:3000
 ## Features
 
 - Image upload with preview
-- Real-time image analysis using Imagga API
+- Real-time image analysis using GCV API
 - Display of tags with confidence scores
+- Authentication System Using MongoDB Database
 - Modern, responsive UI with Tailwind CSS
 
 ## Tech Stack
 
 - Backend: Node.js, Express
 - Frontend: React, Tailwind CSS
-- API: Imagga Image Recognition API
+- API: Google Clous Vision API
