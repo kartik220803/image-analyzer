@@ -15,15 +15,14 @@ This application allows users to upload images and get AI-powered tags and categ
    ```bash
    npm install
    ```
+3. Downlod the key file, containing credentials of Google Cloud Vision API in json format, and rename it to `google-credentials.json`
 
-3. Create a `.env` file in the backend directory and add your Imagga API credentials:
+4. Create a `.env` file in the backend directory and add a variable:
    ```
-   IMAGGA_API_KEY=your_api_key_here
-   IMAGGA_API_SECRET=your_api_secret_here
-   PORT=5000
+   GOOGLE_APPLICATION_CREDENTIALS= ./google-credentials.json
    ```
 
-4. Start the backend server:
+5. Start the backend server:
    ```bash
    npm run dev
    ```
