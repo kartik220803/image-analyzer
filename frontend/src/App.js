@@ -9,7 +9,6 @@ function App() {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [history, setHistory] = useState([]);
-    const [saved, setSaved] = useState([]);
     const [activeTab, setActiveTab] = useState('home');
     const [showLogin, setShowLogin] = useState(false);
     const [showRegister, setShowRegister] = useState(false);
@@ -54,23 +53,6 @@ function App() {
             setHistory(response.data);
         } catch (error) {
             setError('Failed to fetch history');
-        }
-    };
-
-    const fetchSaved = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setError('Please log in to view saved analyses');
-                return;
-            }
-
-            const response = await axios.get('https://image-analyzer-gamma.vercel.app/saved', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setSaved(response.data);
-        } catch (error) {
-            setError('Failed to fetch saved analyses');
         }
     };
 
@@ -203,7 +185,6 @@ function App() {
         localStorage.removeItem('user');
         setUser(null);
         setHistory([]);
-        setSaved([]);
         setActiveTab('home');
     };
 
@@ -246,6 +227,9 @@ function App() {
                         </button>
                     )}
                 </div>
+                <button onClick={toggleTheme} className="theme-toggle">
+                    {localStorage.getItem('theme') === 'light' ? '🌙' : '☀️'}
+                </button>
             </header>
 
             {error && <div className="error-message">{error}</div>}

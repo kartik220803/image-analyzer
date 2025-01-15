@@ -453,7 +453,7 @@ body {
 }
 
 .modal-content h2 {
-    color: var(--primary-color);
+    color: var (--primary-color);
     margin-bottom: 1.5rem;
     text-align: center;
 }
