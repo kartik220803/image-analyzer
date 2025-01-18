@@ -20,6 +20,18 @@ function App() {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
     const [showLoginPassword, setShowLoginPassword] = useState(false);
     const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+    const [showAccountSettings, setShowAccountSettings] = useState(false);
+    const [accountForm, setAccountForm] = useState({
+        newUsername: '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+        verifyPassword: ''
+    });
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showVerifyPassword, setShowVerifyPassword] = useState(false);
 
     // Theme effect
     useEffect(() => {
@@ -190,6 +202,63 @@ function App() {
         setActiveTab('home');
     };
 
+    const handleUpdateUsername = async (e) => {
+        e.preventDefault();
+        setError(null);
+        
+        try {
+            // Check if username is available
+            const checkResponse = await axios.get(`https://image-analyzer-b.vercel.app/check-username/${accountForm.newUsername}`);
+            if (!checkResponse.data.available) {
+                setError('Username is already taken');
+                return;
+            }
+
+            const response = await axios.post('https://image-analyzer-b.vercel.app/update-username', {
+                newUsername: accountForm.newUsername,
+                password: accountForm.verifyPassword
+            }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+
+            setUser(response.data.user);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            setAccountForm(prev => ({ ...prev, newUsername: '', verifyPassword: '' }));
+            setError('Username updated successfully!');
+        } catch (error) {
+            setError(error.response?.data?.error || 'Failed to update username');
+        }
+    };
+
+    const handleUpdatePassword = async (e) => {
+        e.preventDefault();
+        setError(null);
+
+        if (accountForm.newPassword !== accountForm.confirmPassword) {
+            setError('New passwords do not match');
+            return;
+        }
+
+        try {
+            await axios.post('https://image-analyzer-b.vercel.app/update-password', {
+                currentPassword: accountForm.currentPassword,
+                newPassword: accountForm.newPassword
+            }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+
+            setAccountForm(prev => ({
+                ...prev,
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: ''
+            }));
+            setError('Password updated successfully!');
+        } catch (error) {
+            setError(error.response?.data?.error || 'Failed to update password');
+        }
+    };
+
     return (
         <div className="App">
             <header className="header">
@@ -215,6 +284,14 @@ function App() {
                     >
                         History
                     </button>
+                    {user && (
+                        <button 
+                            className="nav-link"
+                            onClick={() => setShowAccountSettings(true)}
+                        >
+                            Account
+                        </button>
+                    )}
                 </nav>
                 <div className="auth-section">
                     {user ? (
@@ -540,6 +617,118 @@ function App() {
                             </p>
                         </form>
                         <button className="close-button" onClick={() => { setShowRegister(false); setError(null); }}>×</button>
+                    </div>
+                </div>
+            )}
+
+            {/* Account Settings Modal */}
+            {showAccountSettings && (
+                <div className="modal">
+                    <div className="modal-content">
+                        <h2>Account Settings</h2>
+                        <div className="settings-section">
+                            <h3>Update Username</h3>
+                            <form onSubmit={handleUpdateUsername} className="auth-form">
+                                <div className="form-group">
+                                    <label>New Username</label>
+                                    <input
+                                        type="text"
+                                        value={accountForm.newUsername}
+                                        onChange={(e) => setAccountForm(prev => ({ ...prev, newUsername: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Verify Password</label>
+                                    <input
+                                        type={showVerifyPassword ? "text" : "password"}
+                                        value={accountForm.verifyPassword}
+                                        onChange={(e) => setAccountForm(prev => ({ ...prev, verifyPassword: e.target.value }))}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        className="password-toggle"
+                                        onClick={() => setShowVerifyPassword(!showVerifyPassword)}
+                                    >
+                                        {showVerifyPassword ? "Hide" : "Show"}
+                                    </button>
+                                </div>
+                                <button type="submit" className="analyze-btn">Update Username</button>
+                            </form>
+                        </div>
+
+                        <div className="settings-section">
+                            <h3>Update Password</h3>
+                            <form onSubmit={handleUpdatePassword} className="auth-form">
+                                <div className="form-group">
+                                    <label>Current Password</label>
+                                    <input
+                                        type={showCurrentPassword ? "text" : "password"}
+                                        value={accountForm.currentPassword}
+                                        onChange={(e) => setAccountForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        className="password-toggle"
+                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                    >
+                                        {showCurrentPassword ? "Hide" : "Show"}
+                                    </button>
+                                </div>
+                                <div className="form-group">
+                                    <label>New Password</label>
+                                    <input
+                                        type={showNewPassword ? "text" : "password"}
+                                        value={accountForm.newPassword}
+                                        onChange={(e) => setAccountForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        className="password-toggle"
+                                        onClick={() => setShowNewPassword(!showNewPassword)}
+                                    >
+                                        {showNewPassword ? "Hide" : "Show"}
+                                    </button>
+                                </div>
+                                <div className="form-group">
+                                    <label>Confirm New Password</label>
+                                    <input
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        value={accountForm.confirmPassword}
+                                        onChange={(e) => setAccountForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        className="password-toggle"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    >
+                                        {showConfirmPassword ? "Hide" : "Show"}
+                                    </button>
+                                </div>
+                                <button type="submit" className="analyze-btn">Update Password</button>
+                            </form>
+                        </div>
+                        {error && <div className="error-message">{error}</div>}
+                        <button 
+                            className="close-button"
+                            onClick={() => {
+                                setShowAccountSettings(false);
+                                setError(null);
+                                setAccountForm({
+                                    newUsername: '',
+                                    currentPassword: '',
+                                    newPassword: '',
+                                    confirmPassword: '',
+                                    verifyPassword: ''
+                                });
+                            }}
+                        >
+                            ×
+                        </button>
                     </div>
                 </div>
             )}

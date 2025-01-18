@@ -452,6 +452,13 @@ body {
     border: none;
     color: var(--secondary-color);
     cursor: pointer;
+    padding: 0.5rem;
+    line-height: 1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
 }
 
 .password-toggle:hover {
@@ -462,6 +469,100 @@ body {
     color: var(--error-color);
     margin-top: 0.5rem;
     font-size: 0.9rem;
+}
+
+.settings-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--background-color);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.settings-section:last-child {
+    margin-bottom: 1rem;
+}
+
+.settings-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+}
+
+.settings-section .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.settings-section .analyze-btn {
+    margin-top: 1rem;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-content {
+    background: var(--card-background);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    border: 1px solid var(--border-color);
+}
+
+.modal-content h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0.5rem;
+    line-height: 1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.close-button:hover {
+    background: var(--background-color);
+    color: var(--primary-color);
+}
+
+.error-message.success {
+    color: var(--accent-color);
+    background: rgba(52, 199, 89, 0.1);
+    border: 1px solid var(--accent-color);
+    padding: 0.8rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    margin-top: 1rem;
 }
 
 /* Responsive Design */
@@ -512,5 +613,15 @@ body {
     .nav-link {
         padding: 0.4rem 0.8rem;
         font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        padding: 1.5rem;
+    }
+
+    .settings-section {
+        padding: 1rem;
     }
 }

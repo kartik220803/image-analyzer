@@ -462,6 +462,72 @@ app.post('/toggle-save/:id', auth, async (req, res) => {
     }
 });
 
+// Check username availability
+app.get('/check-username/:username', async (req, res) => {
+    try {
+        const username = req.params.username;
+        const existingUser = await User.findOne({ username });
+        res.json({ available: !existingUser });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update username
+app.post('/update-username', authenticateToken, async (req, res) => {
+    try {
+        const { newUsername, password } = req.body;
+        const user = await User.findById(req.user.id);
+
+        // Verify password
+        if (!user || !(await user.comparePassword(password))) {
+            return res.status(401).json({ error: 'Invalid password' });
+        }
+
+        // Check if new username is available
+        const existingUser = await User.findOne({ username: newUsername });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already taken' });
+        }
+
+        // Update username
+        user.username = newUsername;
+        await user.save();
+
+        res.json({
+            message: 'Username updated successfully',
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update password
+app.post('/update-password', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const user = await User.findById(req.user.id);
+
+        // Verify current password
+        if (!user || !(await user.comparePassword(currentPassword))) {
+            return res.status(401).json({ error: 'Invalid current password' });
+        }
+
+        // Update password
+        user.password = newPassword;
+        await user.save();
+
+        res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
