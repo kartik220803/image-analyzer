@@ -32,6 +32,19 @@ function App() {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showVerifyPassword, setShowVerifyPassword] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+
+    const addNotification = (message, type = 'success') => {
+        const id = Date.now();
+        setNotifications(prev => [...prev, { id, message, type }]);
+        setTimeout(() => {
+            setNotifications(prev => prev.filter(n => n.id !== id));
+        }, 5000);
+    };
+
+    const removeNotification = (id) => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+    };
 
     // Theme effect
     useEffect(() => {
@@ -159,6 +172,7 @@ function App() {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setError(null);
         try {
             const response = await axios.post('https://image-analyzer-b.vercel.app/login', loginForm);
             const { token, user } = response.data;
@@ -169,9 +183,10 @@ function App() {
             setUser(user);
             setShowLogin(false);
             setLoginForm({ username: '', password: '' });
+            addNotification('Successfully logged in!');
             fetchHistory();
         } catch (error) {
-            setError(error.response?.data?.error || 'Login failed');
+            addNotification(error.response?.data?.error || 'Login failed', 'error');
         }
     };
 
@@ -188,9 +203,10 @@ function App() {
             setUser(user);
             setShowRegister(false);
             setRegisterForm({ username: '', email: '', password: '' });
+            addNotification('Successfully registered!');
             fetchHistory();
         } catch (error) {
-            setError(error.response?.data?.error || 'Registration failed');
+            addNotification(error.response?.data?.error || 'Registration failed', 'error');
         }
     };
 
@@ -207,10 +223,9 @@ function App() {
         setError(null);
         
         try {
-            // Check if username is available
             const checkResponse = await axios.get(`https://image-analyzer-b.vercel.app/check-username/${accountForm.newUsername}`);
             if (!checkResponse.data.available) {
-                setError('Username is already taken');
+                addNotification('Username is already taken', 'error');
                 return;
             }
 
@@ -224,9 +239,9 @@ function App() {
             setUser(response.data.user);
             localStorage.setItem('user', JSON.stringify(response.data.user));
             setAccountForm(prev => ({ ...prev, newUsername: '', verifyPassword: '' }));
-            setError('Username updated successfully!');
+            addNotification('Username updated successfully!');
         } catch (error) {
-            setError(error.response?.data?.error || 'Failed to update username');
+            addNotification(error.response?.data?.error || 'Failed to update username', 'error');
         }
     };
 
@@ -235,7 +250,7 @@ function App() {
         setError(null);
 
         if (accountForm.newPassword !== accountForm.confirmPassword) {
-            setError('New passwords do not match');
+            addNotification('New passwords do not match', 'error');
             return;
         }
 
@@ -253,14 +268,29 @@ function App() {
                 newPassword: '',
                 confirmPassword: ''
             }));
-            setError('Password updated successfully!');
+            addNotification('Password updated successfully!');
         } catch (error) {
-            setError(error.response?.data?.error || 'Failed to update password');
+            addNotification(error.response?.data?.error || 'Failed to update password', 'error');
         }
     };
 
     return (
         <div className="App">
+            {/* Notification Container */}
+            <div className="notification-container">
+                {notifications.map(({ id, message, type }) => (
+                    <div key={id} className={`notification ${type}`}>
+                        <span className="notification-message">{message}</span>
+                        <button 
+                            className="notification-close"
+                            onClick={() => removeNotification(id)}
+                        >
+                            ×
+                        </button>
+                    </div>
+                ))}
+            </div>
+
             <header className="header">
                 <h1 className="app-title">Vision Analyzer</h1>
                 <nav className="nav-links">
