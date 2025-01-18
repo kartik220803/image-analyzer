@@ -17,16 +17,16 @@ function App() {
     const [registerForm, setRegisterForm] = useState({ username: '', email: '', password: '' });
     const [selectedAnalysis, setSelectedAnalysis] = useState(null);
     const [preview, setPreview] = useState(null);
+    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
     // Theme effect
     useEffect(() => {
-        document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
-    }, []);
-
-    const toggleTheme = () => {
-        const theme = localStorage.getItem('theme') === 'light' ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
     };
 
     // Check for existing token on load
@@ -46,7 +46,7 @@ function App() {
                 setError('Please log in to view history');
                 return;
             }
-
+            
             const response = await axios.get('https://image-analyzer-gamma.vercel.app/history', {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -228,7 +228,7 @@ function App() {
                     )}
                 </div>
                 <button onClick={toggleTheme} className="theme-toggle">
-                    {localStorage.getItem('theme') === 'light' ? '🌙' : '☀️'}
+                    {theme === 'light' ? '🌙' : '☀️'}
                 </button>
             </header>
 

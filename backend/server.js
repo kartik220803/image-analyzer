@@ -10,34 +10,51 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const Analysis = require('./models/Analysis');
+const { Storage } = require('@google-cloud/storage');
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadDir = 'uploads';
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
-        }
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
+// Initialize Google Cloud Storage
+const storage = new Storage({
+    keyFilename: process.env.GOOGLE_STORAGE_CREDENTIALS,
+    projectId: process.env.GOOGLE_PROJECT_ID
 });
 
-const upload = multer({ storage: storage });
+const bucketName = process.env.GOOGLE_STORAGE_BUCKET;
+const bucket = storage.bucket(bucketName);
+
+// Configure multer for memory storage
+const multerStorage = multer.memoryStorage();
+const upload = multer({ storage: multerStorage });
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Serve uploaded files statically
-app.use('/uploads', express.static('uploads'));
+// Helper function to upload file to Google Cloud Storage
+const uploadToGCS = async (file) => {
+    const fileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+    const blob = bucket.file(fileName);
+    const blobStream = blob.createWriteStream({
+        resumable: false,
+        metadata: {
+            contentType: file.mimetype
+        }
+    });
+
+    return new Promise((resolve, reject) => {
+        blobStream.on('error', (err) => reject(err));
+        blobStream.on('finish', async () => {
+            // Make the file public
+            await blob.makePublic();
+            const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
+            resolve(publicUrl);
+        });
+        blobStream.end(file.buffer);
+    });
+};
 
 // MongoDB Connection
-mongoose.connect('mongodb://localhost:27017/vision-analyzer', {
+mongoose.connect(process.env.MONGODB_CONNECTION_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => {
@@ -47,7 +64,7 @@ mongoose.connect('mongodb://localhost:27017/vision-analyzer', {
 });
 
 // JWT Secret
-const JWT_SECRET = 'your-secret-key'; // In production, use environment variable
+// const JWT_SECRET = 'your-secret-key'; // In production, use environment variable
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
@@ -59,7 +76,7 @@ const authenticateToken = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
         next();
     } catch (error) {
@@ -76,7 +93,7 @@ const auth = async (req, res, next) => {
             return next();
         }
 
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id);
         
         if (!user) {
@@ -112,7 +129,7 @@ app.post('/register', async (req, res) => {
         const user = new User({ username, email, password });
         await user.save();
         
-        const token = jwt.sign({ id: user._id }, JWT_SECRET);
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
         res.status(201).json({
             token,
             user: {
@@ -137,7 +154,7 @@ app.post('/login', async (req, res) => {
             });
         }
 
-        const token = jwt.sign({ id: user._id }, JWT_SECRET);
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
         
         res.json({
             token,
@@ -154,7 +171,7 @@ app.post('/login', async (req, res) => {
 
 // Creates a client
 const client = new vision.ImageAnnotatorClient({
-    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
+    keyFilename: process.env.GOOGLE_VISION_CREDENTIALS
 });
 
 async function analyzeImage(imageBuffer) {
@@ -220,16 +237,24 @@ app.post('/upload', authenticateToken, upload.single('image'), async (req, res) 
         let imageBuffer;
         
         if (req.file) {
-            // If file was uploaded
-            imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-            imageBuffer = fs.readFileSync(req.file.path);
+            // Upload to Google Cloud Storage
+            imageUrl = await uploadToGCS(req.file);
+            imageBuffer = req.file.buffer;
         } else if (req.body.url) {
             // If URL was provided
             imageUrl = req.body.url;
-            const response = await axios.get(req.body.url, {
+            const response = await axios.get(imageUrl, {
                 responseType: 'arraybuffer'
             });
             imageBuffer = Buffer.from(response.data);
+            
+            // Upload the URL image to Google Cloud Storage as well
+            const file = {
+                originalname: `url-image-${Date.now()}.jpg`,
+                buffer: imageBuffer,
+                mimetype: 'image/jpeg'
+            };
+            imageUrl = await uploadToGCS(file);
         } else {
             return res.status(400).json({ error: 'No image provided' });
         }

@@ -13,6 +13,11 @@
           } 
     ],
     "env": {
-      "GOOGLE_APPLICATION_CREDENTIALS": "./google-credentials.json"
+      "GOOGLE_VISION_CREDENTIALS": "./google-vision-credentials.json",
+      "GOOGLE_STORAGE_CREDENTIALS": "./google-storage-credentials.json",
+      "GOOGLE_PROJECT_ID": "api-based-image-analyzer",
+      "GOOGLE_STORAGE_BUCKET": "image-analyzer-storage",
+      "JWT_SECRET": "your-secret-key",
+      "PORT": "5000"
     }
   }
