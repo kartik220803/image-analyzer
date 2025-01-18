@@ -66,15 +66,15 @@ const uploadToGCS = async (file) => {
             
             blobStream.on('finish', async () => {
                 try {
-                    console.log('Upload finished, making file public...');
-                    // Make the file public
-                    await blob.makePublic();
+                    console.log('Upload finished, generating public URL...');
+                    // With uniform bucket-level access, we don't need to make individual files public
+                    // Just construct the public URL directly
                     const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
-                    console.log('File made public, URL:', publicUrl);
+                    console.log('File uploaded successfully, URL:', publicUrl);
                     resolve(publicUrl);
                 } catch (error) {
-                    console.error('Error making blob public:', error);
-                    reject(new Error(`Failed to make file public: ${error.message}`));
+                    console.error('Error generating public URL:', error);
+                    reject(new Error(`Failed to generate public URL: ${error.message}`));
                 }
             });
 
@@ -226,6 +226,10 @@ async function analyzeImage(imageBuffer) {
                 {
                     type: 'TEXT_DETECTION',
                     maxResults: 10
+                },
+                {
+                    type: 'WEB_DETECTION',
+                    maxResults: 10
                 }
             ]
         };
@@ -237,7 +241,7 @@ async function analyzeImage(imageBuffer) {
         const processedResults = {
             labels: result.labelAnnotations?.map(label => ({
                 description: label.description,
-                score: (label.score * 100).toFixed(2)
+                confidence: (label.score * 100).toFixed(2)
             })) || [],
             objects: result.localizedObjectAnnotations?.map(obj => ({
                 name: obj.name,
@@ -247,9 +251,14 @@ async function analyzeImage(imageBuffer) {
                 joy: face.joyLikelihood,
                 sorrow: face.sorrowLikelihood,
                 anger: face.angerLikelihood,
-                surprise: face.surpriseLikelihood
+                surprise: face.surpriseLikelihood,
+                confidence: 100 // Face detection doesn't provide a confidence score
             })) || [],
-            text: result.textAnnotations?.[0]?.description || ''
+            text: result.textAnnotations?.[0]?.description || '',
+            webEntities: result.webDetection?.webEntities?.map(entity => ({
+                description: entity.description,
+                confidence: (entity.score * 100).toFixed(2)
+            })) || []
         };
 
         return processedResults;
