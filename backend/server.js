@@ -27,7 +27,14 @@ const upload = multer({ storage: multerStorage });
 
 const app = express();
 
-app.use(cors());
+// Configure CORS
+app.use(cors({
+    origin: ['https://image-analyzer-mu.vercel.app', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // Helper function to upload file to Google Cloud Storage
