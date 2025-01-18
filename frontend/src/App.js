@@ -47,7 +47,7 @@ function App() {
                 return;
             }
             
-            const response = await axios.get('https://image-analyzer-gamma.vercel.app/history', {
+            const response = await axios.get('https://image-analyzer-b.vercel.app/history', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setHistory(response.data);
@@ -74,7 +74,7 @@ function App() {
                 formData.append('url', imageUrl);
             }
 
-            const response = await axios.post('https://image-analyzer-gamma.vercel.app/upload', formData, {
+            const response = await axios.post('https://image-analyzer-b.vercel.app/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -146,7 +146,7 @@ function App() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('https://image-analyzer-gamma.vercel.app/login', loginForm);
+            const response = await axios.post('https://image-analyzer-b.vercel.app/login', loginForm);
             const { token, user } = response.data;
             
             localStorage.setItem('token', token);
@@ -165,7 +165,7 @@ function App() {
         e.preventDefault();
         setError(null);
         try {
-            const response = await axios.post('https://image-analyzer-gamma.vercel.app/register', registerForm);
+            const response = await axios.post('https://image-analyzer-b.vercel.app/register', registerForm);
             const { token, user } = response.data;
             
             localStorage.setItem('token', token);
