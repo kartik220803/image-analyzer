@@ -18,12 +18,5 @@
                 "Access-Control-Allow-Credentials": "true"
             }
           } 
-    ],
-    "env": {
-      "GOOGLE_VISION_CREDENTIALS": "./google-vision-credentials.json",
-      "GOOGLE_STORAGE_CREDENTIALS": "./google-storage-credentials.json",
-      "GOOGLE_PROJECT_ID": "api-based-image-analyzer",
-      "GOOGLE_STORAGE_BUCKET": "image-analyzer-storage",
-      "PORT": "5000"
-    }
+    ]
   }
