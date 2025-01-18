@@ -14,12 +14,18 @@ const { Storage } = require('@google-cloud/storage');
 
 // Initialize Google Cloud Storage
 const storage = new Storage({
-    keyFilename: process.env.GOOGLE_STORAGE_CREDENTIALS,
+    credentials: JSON.parse(process.env.GOOGLE_STORAGE_CREDENTIALS),
     projectId: process.env.GOOGLE_PROJECT_ID
 });
 
 const bucketName = process.env.GOOGLE_STORAGE_BUCKET;
 const bucket = storage.bucket(bucketName);
+
+// Initialize Vision API client
+const client = new vision.ImageAnnotatorClient({
+    credentials: JSON.parse(process.env.GOOGLE_VISION_CREDENTIALS),
+    projectId: process.env.GOOGLE_PROJECT_ID
+});
 
 // Configure multer for memory storage
 const multerStorage = multer.memoryStorage();
@@ -174,11 +180,6 @@ app.post('/login', async (req, res) => {
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
-});
-
-// Creates a client
-const client = new vision.ImageAnnotatorClient({
-    keyFilename: process.env.GOOGLE_VISION_CREDENTIALS
 });
 
 async function analyzeImage(imageBuffer) {
