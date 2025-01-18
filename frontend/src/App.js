@@ -18,6 +18,8 @@ function App() {
     const [selectedAnalysis, setSelectedAnalysis] = useState(null);
     const [preview, setPreview] = useState(null);
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+    const [showLoginPassword, setShowLoginPassword] = useState(false);
+    const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
     // Theme effect
     useEffect(() => {
@@ -447,48 +449,43 @@ function App() {
             {showLogin && (
                 <div className="modal">
                     <div className="modal-content">
-                        <h2>Welcome Back!</h2>
+                        <h2>Login</h2>
                         <form onSubmit={handleLogin} className="auth-form">
                             <div className="form-group">
+                                <label>Username</label>
                                 <input
                                     type="text"
-                                    placeholder="Username"
                                     value={loginForm.username}
-                                    onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
+                                    onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
                                     required
                                 />
                             </div>
                             <div className="form-group">
+                                <label>Password</label>
                                 <input
-                                    type="password"
-                                    placeholder="Password"
+                                    type={showLoginPassword ? "text" : "password"}
                                     value={loginForm.password}
-                                    onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                                     required
                                 />
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                                >
+                                    {showLoginPassword ? "Hide" : "Show"}
+                                </button>
                             </div>
-                            <button type="submit" className="auth-submit-btn">
-                                Log In
-                            </button>
+                            {error && <div className="error-message">{error}</div>}
+                            <button type="submit" className="analyze-btn">Login</button>
+                            <p className="auth-switch">
+                                Don't have an account?{" "}
+                                <button type="button" className="link-button" onClick={() => { setShowLogin(false); setShowRegister(true); setError(null); }}>
+                                    Register
+                                </button>
+                            </p>
                         </form>
-                        <p className="auth-switch">
-                            Don't have an account?{' '}
-                            <button 
-                                className="link-button"
-                                onClick={() => {
-                                    setShowLogin(false);
-                                    setShowRegister(true);
-                                }}
-                            >
-                                Register Now
-                            </button>
-                        </p>
-                        <button 
-                            className="close-button"
-                            onClick={() => setShowLogin(false)}
-                        >
-                            ×
-                        </button>
+                        <button className="close-button" onClick={() => { setShowLogin(false); setError(null); }}>×</button>
                     </div>
                 </div>
             )}
@@ -497,57 +494,52 @@ function App() {
             {showRegister && (
                 <div className="modal">
                     <div className="modal-content">
-                        <h2>Create Account</h2>
+                        <h2>Register</h2>
                         <form onSubmit={handleRegister} className="auth-form">
                             <div className="form-group">
+                                <label>Username</label>
                                 <input
                                     type="text"
-                                    placeholder="Username"
                                     value={registerForm.username}
-                                    onChange={(e) => setRegisterForm({...registerForm, username: e.target.value})}
+                                    onChange={(e) => setRegisterForm({ ...registerForm, username: e.target.value })}
                                     required
                                 />
                             </div>
                             <div className="form-group">
+                                <label>Email</label>
                                 <input
                                     type="email"
-                                    placeholder="Email"
                                     value={registerForm.email}
-                                    onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
+                                    onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
                                     required
                                 />
                             </div>
                             <div className="form-group">
+                                <label>Password</label>
                                 <input
-                                    type="password"
-                                    placeholder="Password"
+                                    type={showRegisterPassword ? "text" : "password"}
                                     value={registerForm.password}
-                                    onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
+                                    onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
                                     required
                                 />
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                                >
+                                    {showRegisterPassword ? "Hide" : "Show"}
+                                </button>
                             </div>
-                            <button type="submit" className="auth-submit-btn">
-                                Register
-                            </button>
+                            {error && <div className="error-message">{error}</div>}
+                            <button type="submit" className="analyze-btn">Register</button>
+                            <p className="auth-switch">
+                                Already have an account?{" "}
+                                <button type="button" className="link-button" onClick={() => { setShowRegister(false); setShowLogin(true); setError(null); }}>
+                                    Login
+                                </button>
+                            </p>
                         </form>
-                        <p className="auth-switch">
-                            Already have an account?{' '}
-                            <button 
-                                className="link-button"
-                                onClick={() => {
-                                    setShowRegister(false);
-                                    setShowLogin(true);
-                                }}
-                            >
-                                Log In
-                            </button>
-                        </p>
-                        <button 
-                            className="close-button"
-                            onClick={() => setShowRegister(false)}
-                        >
-                            ×
-                        </button>
+                        <button className="close-button" onClick={() => { setShowRegister(false); setError(null); }}>×</button>
                     </div>
                 </div>
             )}
