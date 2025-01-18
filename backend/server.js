@@ -45,25 +45,46 @@ app.use(express.json());
 
 // Helper function to upload file to Google Cloud Storage
 const uploadToGCS = async (file) => {
-    const fileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
-    const blob = bucket.file(fileName);
-    const blobStream = blob.createWriteStream({
-        resumable: false,
-        metadata: {
-            contentType: file.mimetype
-        }
-    });
-
-    return new Promise((resolve, reject) => {
-        blobStream.on('error', (err) => reject(err));
-        blobStream.on('finish', async () => {
-            // Make the file public
-            await blob.makePublic();
-            const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
-            resolve(publicUrl);
+    try {
+        console.log('Starting GCS upload for file:', file.originalname);
+        const fileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+        console.log('Generated filename:', fileName);
+        
+        const blob = bucket.file(fileName);
+        const blobStream = blob.createWriteStream({
+            resumable: false,
+            metadata: {
+                contentType: file.mimetype
+            }
         });
-        blobStream.end(file.buffer);
-    });
+
+        return new Promise((resolve, reject) => {
+            blobStream.on('error', (err) => {
+                console.error('Blob stream error:', err);
+                reject(new Error(`Failed to upload to Google Cloud Storage: ${err.message}`));
+            });
+            
+            blobStream.on('finish', async () => {
+                try {
+                    console.log('Upload finished, making file public...');
+                    // Make the file public
+                    await blob.makePublic();
+                    const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
+                    console.log('File made public, URL:', publicUrl);
+                    resolve(publicUrl);
+                } catch (error) {
+                    console.error('Error making blob public:', error);
+                    reject(new Error(`Failed to make file public: ${error.message}`));
+                }
+            });
+
+            console.log('Writing file buffer to blob stream...');
+            blobStream.end(file.buffer);
+        });
+    } catch (error) {
+        console.error('Error in uploadToGCS:', error);
+        throw new Error(`Failed to initialize upload: ${error.message}`);
+    }
 };
 
 // MongoDB Connection
@@ -244,47 +265,79 @@ app.post('/upload', authenticateToken, upload.single('image'), async (req, res) 
         let imageUrl;
         let imageBuffer;
         
+        console.log('Starting upload process...');
+        
         if (req.file) {
-            // Upload to Google Cloud Storage
-            imageUrl = await uploadToGCS(req.file);
-            imageBuffer = req.file.buffer;
+            console.log('Processing uploaded file...');
+            try {
+                // Upload to Google Cloud Storage
+                imageUrl = await uploadToGCS(req.file);
+                imageBuffer = req.file.buffer;
+                console.log('File uploaded to GCS successfully:', imageUrl);
+            } catch (error) {
+                console.error('Error uploading to GCS:', error);
+                return res.status(500).json({ error: `Error uploading to Google Cloud Storage: ${error.message}` });
+            }
         } else if (req.body.url) {
-            // If URL was provided
-            imageUrl = req.body.url;
-            const response = await axios.get(imageUrl, {
-                responseType: 'arraybuffer'
-            });
-            imageBuffer = Buffer.from(response.data);
-            
-            // Upload the URL image to Google Cloud Storage as well
-            const file = {
-                originalname: `url-image-${Date.now()}.jpg`,
-                buffer: imageBuffer,
-                mimetype: 'image/jpeg'
-            };
-            imageUrl = await uploadToGCS(file);
+            console.log('Processing URL image...');
+            try {
+                // If URL was provided
+                imageUrl = req.body.url;
+                const response = await axios.get(imageUrl, {
+                    responseType: 'arraybuffer'
+                });
+                imageBuffer = Buffer.from(response.data);
+                
+                // Upload the URL image to Google Cloud Storage as well
+                const file = {
+                    originalname: `url-image-${Date.now()}.jpg`,
+                    buffer: imageBuffer,
+                    mimetype: 'image/jpeg'
+                };
+                imageUrl = await uploadToGCS(file);
+                console.log('URL image uploaded to GCS successfully:', imageUrl);
+            } catch (error) {
+                console.error('Error processing URL image:', error);
+                return res.status(500).json({ error: `Error processing URL image: ${error.message}` });
+            }
         } else {
+            console.log('No image provided in request');
             return res.status(400).json({ error: 'No image provided' });
         }
 
-        // Analyze the image
-        const results = await analyzeImage(imageBuffer);
+        console.log('Starting image analysis...');
+        let results;
+        try {
+            // Analyze the image
+            results = await analyzeImage(imageBuffer);
+            console.log('Image analysis completed successfully');
+        } catch (error) {
+            console.error('Error analyzing image:', error);
+            return res.status(500).json({ error: `Error analyzing image: ${error.message}` });
+        }
 
         // Save the analysis to history
         if (req.user) {
-            const analysis = new Analysis({
-                userId: req.user.id,
-                imageUrl: imageUrl,
-                results: results,
-                createdAt: new Date()
-            });
-            await analysis.save();
+            console.log('Saving analysis to history...');
+            try {
+                const analysis = new Analysis({
+                    userId: req.user.id,
+                    imageUrl: imageUrl,
+                    results: results,
+                    createdAt: new Date()
+                });
+                await analysis.save();
+                console.log('Analysis saved to history successfully');
+            } catch (error) {
+                console.error('Error saving to history:', error);
+                // Don't return here, still send results even if saving fails
+            }
         }
 
         res.json(results);
     } catch (error) {
-        console.error('Upload error:', error);
-        res.status(500).json({ error: error.message });
+        console.error('Unexpected upload error:', error);
+        res.status(500).json({ error: `Unexpected error: ${error.message}` });
     }
 });
 
