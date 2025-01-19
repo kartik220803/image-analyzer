@@ -110,7 +110,10 @@ function App() {
 
             const response = await axios.post(endpoint, formData, { headers });
 
-            setResults(response.data);
+            // Handle different response structures for anonymous vs authenticated endpoints
+            const analysisResults = user ? response.data : response.data.results;
+            setResults(analysisResults);
+            
             if (user) {
                 fetchHistory(); // Refresh history after successful upload
             }
