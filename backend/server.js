@@ -87,6 +87,40 @@ const uploadToGCS = async (file) => {
     }
 };
 
+// Helper function to delete old analyses
+const cleanupOldAnalyses = async (userId) => {
+    try {
+        // Get all analyses for the user, sorted by date
+        const analyses = await Analysis.find({ userId }).sort({ createdAt: -1 });
+        
+        // If we have more than 10 analyses, delete the older ones
+        if (analyses.length > 10) {
+            const analysesToDelete = analyses.slice(10);
+            
+            // Delete old images from Google Cloud Storage
+            for (const analysis of analysesToDelete) {
+                if (analysis.imageUrl) {
+                    try {
+                        const fileName = analysis.imageUrl.split('/').pop();
+                        const file = bucket.file(fileName);
+                        await file.delete();
+                    } catch (error) {
+                        console.error('Error deleting file from GCS:', error);
+                    }
+                }
+            }
+            
+            // Delete old analyses from MongoDB
+            await Analysis.deleteMany({
+                userId,
+                _id: { $in: analysesToDelete.map(a => a._id) }
+            });
+        }
+    } catch (error) {
+        console.error('Error cleaning up old analyses:', error);
+    }
+};
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_CONNECTION_URL, {
     useNewUrlParser: true,
@@ -300,82 +334,37 @@ app.post('/analyze-anonymous', upload.single('image'), async (req, res) => {
 // Apply auth middleware to routes that need user context
 app.post('/upload', authenticateToken, upload.single('image'), async (req, res) => {
     try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
+
         let imageUrl;
-        let imageBuffer;
-        
-        console.log('Starting upload process...');
-        
-        if (req.file) {
-            console.log('Processing uploaded file...');
-            try {
-                // Upload to Google Cloud Storage
-                imageUrl = await uploadToGCS(req.file);
-                imageBuffer = req.file.buffer;
-                console.log('File uploaded to GCS successfully:', imageUrl);
-            } catch (error) {
-                console.error('Error uploading to GCS:', error);
-                return res.status(500).json({ error: `Error uploading to Google Cloud Storage: ${error.message}` });
-            }
-        } else if (req.body.url) {
-            console.log('Processing URL image...');
-            try {
-                // If URL was provided
-                imageUrl = req.body.url;
-                const response = await axios.get(imageUrl, {
-                    responseType: 'arraybuffer'
-                });
-                imageBuffer = Buffer.from(response.data);
-                
-                // Upload the URL image to Google Cloud Storage as well
-                const file = {
-                    originalname: `url-image-${Date.now()}.jpg`,
-                    buffer: imageBuffer,
-                    mimetype: 'image/jpeg'
-                };
-                imageUrl = await uploadToGCS(file);
-                console.log('URL image uploaded to GCS successfully:', imageUrl);
-            } catch (error) {
-                console.error('Error processing URL image:', error);
-                return res.status(500).json({ error: `Error processing URL image: ${error.message}` });
-            }
-        } else {
-            console.log('No image provided in request');
-            return res.status(400).json({ error: 'No image provided' });
-        }
-
-        console.log('Starting image analysis...');
-        let results;
         try {
-            // Analyze the image
-            results = await analyzeImage(imageBuffer);
-            console.log('Image analysis completed successfully');
+            imageUrl = await uploadToGCS(req.file);
         } catch (error) {
-            console.error('Error analyzing image:', error);
-            return res.status(500).json({ error: `Error analyzing image: ${error.message}` });
+            console.error('Error uploading to GCS:', error);
+            return res.status(500).json({ error: 'Failed to upload image' });
         }
 
-        // Save the analysis to history
-        if (req.user) {
-            console.log('Saving analysis to history...');
-            try {
-                const analysis = new Analysis({
-                    userId: req.user.id,
-                    imageUrl: imageUrl,
-                    results: results,
-                    createdAt: new Date()
-                });
-                await analysis.save();
-                console.log('Analysis saved to history successfully');
-            } catch (error) {
-                console.error('Error saving to history:', error);
-                // Don't return here, still send results even if saving fails
-            }
-        }
+        // Analyze the image
+        const results = await analyzeImage(req.file.buffer);
 
-        res.json(results);
+        // Create new analysis document
+        const analysis = new Analysis({
+            userId: req.user.id,
+            imageUrl,
+            results,
+            isSaved: true
+        });
+        await analysis.save();
+
+        // Clean up old analyses
+        await cleanupOldAnalyses(req.user.id);
+
+        return res.json(results);
     } catch (error) {
-        console.error('Unexpected upload error:', error);
-        res.status(500).json({ error: `Unexpected error: ${error.message}` });
+        console.error('Error in upload:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 

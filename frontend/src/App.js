@@ -280,7 +280,7 @@ function App() {
     };
 
     return (
-        <div className="App">
+        <div className="app">
             {/* Notification Container */}
             <div className="notification-container">
                 {notifications.map(({ id, message, type }) => (
@@ -296,8 +296,11 @@ function App() {
                 ))}
             </div>
 
-            <header className="header">
-                <h1 className="app-title">Vision Analyzer</h1>
+            <header className="app-header">
+                <div className="app-logo">
+                    <span className="icon">🔍</span>
+                    <span>Image Analyzer</span>
+                </div>
                 <nav className="nav-links">
                     <button 
                         className={`nav-link ${activeTab === 'home' ? 'active' : ''}`}
