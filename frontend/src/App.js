@@ -101,12 +101,14 @@ function App() {
                 formData.append('url', imageUrl);
             }
 
-            const response = await axios.post('https://image-analyzer-b.vercel.app/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            // Use anonymous endpoint if user is not logged in
+            const endpoint = user ? 'https://image-analyzer-b.vercel.app/upload' : 'https://image-analyzer-b.vercel.app/analyze-anonymous';
+            const headers = {
+                'Content-Type': 'multipart/form-data',
+                ...(user && { 'Authorization': `Bearer ${localStorage.getItem('token')}` })
+            };
+
+            const response = await axios.post(endpoint, formData, { headers });
 
             setResults(response.data);
             if (user) {

@@ -268,6 +268,35 @@ async function analyzeImage(imageBuffer) {
     }
 }
 
+// Anonymous image analysis endpoint
+app.post('/analyze-anonymous', upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
+
+        let imageUrl;
+        try {
+            imageUrl = await uploadToGCS(req.file);
+        } catch (error) {
+            console.error('Error uploading to GCS:', error);
+            return res.status(500).json({ error: 'Failed to upload image' });
+        }
+
+        // Analyze the image
+        const results = await analyzeImage(req.file.buffer);
+        
+        return res.json({
+            success: true,
+            imageUrl,
+            results
+        });
+    } catch (error) {
+        console.error('Error in anonymous analysis:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Apply auth middleware to routes that need user context
 app.post('/upload', authenticateToken, upload.single('image'), async (req, res) => {
     try {
