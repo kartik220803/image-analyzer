@@ -286,7 +286,7 @@ function App() {
                 {notifications.map(({ id, message, type }) => (
                     <div key={id} className={`notification ${type}`}>
                         <span className="notification-message">{message}</span>
-                        <button 
+                        <button
                             className="notification-close"
                             onClick={() => removeNotification(id)}
                         >
@@ -301,11 +301,13 @@ function App() {
                     <span className="icon">🔍</span>
                     <span>Image Analyzer</span>
                 </div>
+
                 <nav className="nav-links">
                     <button 
                         className={`nav-link ${activeTab === 'home' ? 'active' : ''}`}
                         onClick={() => setActiveTab('home')}
                     >
+                        <span className="nav-icon">🏠</span>
                         Home
                     </button>
                     <button 
@@ -320,22 +322,19 @@ function App() {
                             fetchHistory();
                         }}
                     >
+                        <span className="nav-icon">📊</span>
                         History
                     </button>
-                    {user && (
-                        <button 
-                            className="nav-link"
-                            onClick={() => setShowAccountSettings(true)}
-                        >
-                            Account
-                        </button>
-                    )}
                 </nav>
+
                 <div className="auth-section">
                     {user ? (
                         <div className="user-info">
                             <span>Welcome, {user.username}!</span>
-                            <button className="logout-btn" onClick={handleLogout}>Log Out</button>
+                            <button className="logout-btn" onClick={handleLogout}>
+                                <span className="logout-icon">👋</span>
+                                Log Out
+                            </button>
                         </div>
                     ) : (
                         <button className="login-btn" onClick={() => setShowLogin(true)}>
@@ -343,19 +342,19 @@ function App() {
                             Log In
                         </button>
                     )}
+                    <button onClick={toggleTheme} className="theme-toggle">
+                        {theme === 'light' ? '🌙' : '☀️'}
+                    </button>
                 </div>
-                <button onClick={toggleTheme} className="theme-toggle">
-                    {theme === 'light' ? '🌙' : '☀️'}
-                </button>
             </header>
-
-            {error && <div className="error-message">{error}</div>}
 
             <main className="main-content">
                 {activeTab === 'home' && (
                     <div className="home-container">
                         <div className="upload-section">
                             <h2>Analyze Your Image</h2>
+                            <p className="subtitle">Powerful AI-powered image analysis at your fingertips</p>
+                            
                             <form onSubmit={handleSubmit} className="upload-form">
                                 <div className="upload-options">
                                     <div 
@@ -375,13 +374,18 @@ function App() {
                                                 <img src={preview} alt="Preview" className="upload-preview" />
                                             ) : (
                                                 <>
-                                                    <span className="upload-icon">📁</span>
-                                                    <span>Drag & Drop or Click to Upload</span>
+                                                    <span className="upload-icon">📸</span>
+                                                    <span className="upload-text">Drag & Drop or Click to Upload</span>
+                                                    <span className="upload-subtext">Supports JPG, PNG, GIF</span>
                                                 </>
                                             )}
                                         </label>
                                     </div>
-                                    <div className="divider">OR</div>
+                                    
+                                    <div className="divider">
+                                        <span>OR</span>
+                                    </div>
+                                    
                                     <div className="url-input-container">
                                         <input
                                             type="text"
@@ -397,15 +401,33 @@ function App() {
                                         )}
                                     </div>
                                 </div>
+                                
                                 <button 
-                                    type="submit" 
+                                    type="submit"
                                     className="analyze-btn"
                                     disabled={loading || (!file && !imageUrl)}
                                 >
-                                    {loading ? 'Analyzing...' : 'Analyze Image'}
+                                    {loading ? (
+                                        <span className="loading-text">
+                                            <span className="loading-icon">🔄</span>
+                                            Analyzing...
+                                        </span>
+                                    ) : (
+                                        <>
+                                            <span className="btn-icon">✨</span>
+                                            Analyze Image
+                                        </>
+                                    )}
                                 </button>
                             </form>
                         </div>
+
+                        {error && (
+                            <div className="error-container">
+                                <span className="error-icon">⚠️</span>
+                                <span className="error-message">{error}</span>
+                            </div>
+                        )}
 
                         {results && (
                             <div className="results-container">
