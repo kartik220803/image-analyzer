@@ -299,7 +299,7 @@ function App() {
             <header className="app-header">
                 <div className="app-logo">
                     <span className="icon">🔍</span>
-                    <span>Image Analyzer</span>
+                    <span>Vizify</span>
                 </div>
 
                 <nav className="nav-links">
