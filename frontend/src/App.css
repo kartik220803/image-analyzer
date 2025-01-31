@@ -597,6 +597,7 @@ body {
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    cursor: default;
 }
 
 .url-input-container {
@@ -611,6 +612,8 @@ body {
     color: var(--text-color);
     font-size: 0.9rem;
     margin-bottom: 4px;
+    text-align: left;
+    cursor: default;
 }
 
 .url-input {
@@ -622,6 +625,12 @@ body {
     transition: all 0.3s ease;
     background: var(--background-color);
     color: var(--text-color);
+    cursor: text;
+    pointer-events: auto;
+}
+
+.url-input:hover {
+    border-color: var(--primary-color);
 }
 
 .url-input:focus {

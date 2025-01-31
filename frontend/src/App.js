@@ -429,8 +429,11 @@ function App() {
                                                 type="url"
                                                 value={imageUrl}
                                                 onChange={handleUrlChange}
+                                                onClick={(e) => e.target.focus()}
+                                                onFocus={(e) => e.target.select()}
                                                 placeholder="Enter Image URL (e.g., https://example.com/image.jpg)"
                                                 className={`url-input ${urlError ? 'error' : ''}`}
+                                                autoComplete="off"
                                             />
                                             {urlError && (
                                                 <div className="url-error">
