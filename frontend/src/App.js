@@ -421,26 +421,32 @@ function App() {
                                         <span>OR</span>
                                     </div>
                                     
-                                    <div className="url-input-container">
-                                        <input
-                                            type="url"
-                                            value={imageUrl}
-                                            onChange={handleUrlChange}
-                                            placeholder="Enter Image URL (e.g., https://example.com/image.jpg)"
-                                            className={`url-input ${urlError ? 'error' : ''}`}
-                                        />
-                                        {urlError && (
-                                            <div className="url-error">
-                                                <span className="error-icon">⚠️</span>
-                                                {urlError}
-                                            </div>
-                                        )}
+                                    <div className="url-section">
+                                        <div className="url-input-container">
+                                            <label htmlFor="url-input" className="url-label">Image URL</label>
+                                            <input
+                                                id="url-input"
+                                                type="url"
+                                                value={imageUrl}
+                                                onChange={handleUrlChange}
+                                                placeholder="Enter Image URL (e.g., https://example.com/image.jpg)"
+                                                className={`url-input ${urlError ? 'error' : ''}`}
+                                            />
+                                            {urlError && (
+                                                <div className="url-error">
+                                                    <span className="error-icon">⚠️</span>
+                                                    {urlError}
+                                                </div>
+                                            )}
+                                        </div>
+                                        
                                         {urlPreviewLoading && (
                                             <div className="url-preview-loading">
                                                 <span className="loading-icon">🔄</span>
                                                 Loading preview...
                                             </div>
                                         )}
+                                        
                                         {imageUrl && !urlError && !urlPreviewLoading && (
                                             <div className="url-preview">
                                                 <img src={imageUrl} alt="URL Preview" className="upload-preview" />
