@@ -398,11 +398,9 @@ function App() {
                                             <label htmlFor="url-input" className="url-label">Image URL</label>
                                             <input
                                                 id="url-input"
-                                                name="url-input"
                                                 type="text"
-                                                inputMode="url"
                                                 value={imageUrl}
-                                                onChange={handleUrlChange}
+                                                onChange={(e) => setImageUrl(e.target.value)}
                                                 placeholder="Enter Image URL (e.g., https://example.com/image.jpg)"
                                                 className="url-input"
                                             />
