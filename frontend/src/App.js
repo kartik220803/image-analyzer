@@ -143,15 +143,36 @@ function App() {
         }
     };
 
-    const handleUrlChange = (e) => {
+    const handleUrlChange = async (e) => {
         const url = e.target.value;
         setImageUrl(url);
         setFile(null);
-        
+        setUrlError('');
+
         if (!url) {
             setPreview(null);
-            setUrlError('');
             return;
+        }
+
+        if (url.match(/\.(jpeg|jpg|gif|png)$/i)) {
+            setUrlPreviewLoading(true);
+            try {
+                const img = new Image();
+                img.onload = () => {
+                    setPreview(url);
+                    setUrlPreviewLoading(false);
+                };
+                img.onerror = () => {
+                    setUrlError('Unable to load image from URL');
+                    setPreview(null);
+                    setUrlPreviewLoading(false);
+                };
+                img.src = url;
+            } catch (error) {
+                setUrlError('Unable to load image from URL');
+                setPreview(null);
+                setUrlPreviewLoading(false);
+            }
         }
     };
 
@@ -400,9 +421,10 @@ function App() {
                                                 id="url-input"
                                                 type="text"
                                                 value={imageUrl}
-                                                onChange={(e) => setImageUrl(e.target.value)}
+                                                onChange={handleUrlChange}
                                                 placeholder="Enter Image URL (e.g., https://example.com/image.jpg)"
                                                 className="url-input"
+                                                autoComplete="off"
                                             />
                                             {urlError && (
                                                 <div className="url-error">

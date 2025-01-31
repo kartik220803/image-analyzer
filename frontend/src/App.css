@@ -593,64 +593,77 @@ body {
 }
 
 .url-section {
-    width: 100%;
-    padding: 20px;
+    background: var(--card-background);
     border-radius: 12px;
-    background: #ffffff;
-    border: 1px solid #e1e4e8;
-    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .url-input-container {
-    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
 }
 
 .url-label {
-    display: block;
-    margin-bottom: 8px;
     font-weight: 500;
-    color: #141c3a;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    text-align: left;
 }
 
 .url-input {
     width: 100%;
-    height: 48px;
-    padding: 0 16px;
-    font-size: 16px;
-    color: #141c3a;
-    background-color: #ffffff;
-    border: 2px solid #e1e4e8;
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
     border-radius: 8px;
-    box-sizing: border-box;
+    font-size: 1rem;
+    background: var(--background-color);
+    color: var(--text-color);
+    cursor: text;
+    transition: all 0.3s ease;
+    z-index: 1;
+    position: relative;
 }
 
 .url-input:hover {
-    border-color: #6e07f3;
+    border-color: var(--primary-color);
 }
 
 .url-input:focus {
     outline: none;
-    border-color: #6e07f3;
-    box-shadow: 0 0 0 3px rgba(110, 7, 243, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-light);
 }
 
 [data-theme='dark'] .url-section {
     background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme='dark'] .url-label {
-    color: #ffffff;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 [data-theme='dark'] .url-input {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
+    color: #fff;
 }
 
 [data-theme='dark'] .url-input::placeholder {
     color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme='dark'] .url-input:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme='dark'] .url-input:focus {
+    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 0 2px rgba(110, 7, 243, 0.2);
 }
 
 .url-error {
