@@ -621,10 +621,30 @@ body {
     border: 2px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
-    background: var(--background-color);
+    background-color: var(--background-color);
     color: var(--text-color);
     cursor: text;
     transition: all 0.3s ease;
+    -webkit-appearance: none;
+    appearance: none;
+    pointer-events: auto;
+    opacity: 1;
+}
+
+.url-input:not(:disabled) {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.url-input:hover:not(:disabled) {
+    border-color: var(--primary-color);
+}
+
+.url-input:focus:not(:disabled) {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-light);
+    background-color: var(--background-color);
 }
 
 .url-input::placeholder {
@@ -640,6 +660,7 @@ body {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px var(--primary-light);
+    background: var(--background-color);
 }
 
 [data-theme='dark'] .url-section {
@@ -651,6 +672,11 @@ body {
 [data-theme='dark'] .url-input {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+[data-theme='dark'] .url-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
 }
 
 [data-theme='dark'] .url-input:hover {

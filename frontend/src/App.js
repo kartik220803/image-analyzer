@@ -143,11 +143,7 @@ function App() {
         }
     };
 
-    const isValidImageUrl = (url) => {
-        return url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
-    };
-
-    const handleUrlChange = async (e) => {
+    const handleUrlChange = (e) => {
         const url = e.target.value;
         setImageUrl(url);
         setFile(null);
@@ -158,28 +154,20 @@ function App() {
             return;
         }
 
-        if (!isValidImageUrl(url)) {
-            setUrlError('Please enter a valid image URL (jpeg, jpg, gif, png)');
-            setPreview(null);
-            return;
-        }
-
-        setUrlPreviewLoading(true);
-        try {
-            // Test if the image loads successfully
-            await new Promise((resolve, reject) => {
-                const img = new Image();
-                img.onload = resolve;
-                img.onerror = reject;
-                img.src = url;
-            });
-            setPreview(url);
-            setUrlError('');
-        } catch (error) {
-            setUrlError('Unable to load image from URL. Please check if the URL is correct.');
-            setPreview(null);
-        } finally {
-            setUrlPreviewLoading(false);
+        // Only validate and load preview if URL is complete
+        if (url.startsWith('http') && (url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.png') || url.endsWith('.gif'))) {
+            setUrlPreviewLoading(true);
+            const img = new Image();
+            img.onload = () => {
+                setPreview(url);
+                setUrlPreviewLoading(false);
+            };
+            img.onerror = () => {
+                setUrlError('Unable to load image from URL');
+                setPreview(null);
+                setUrlPreviewLoading(false);
+            };
+            img.src = url;
         }
     };
 
@@ -428,16 +416,13 @@ function App() {
                                                 id="url-input"
                                                 type="text"
                                                 value={imageUrl}
-                                                onChange={(e) => {
-                                                    setImageUrl(e.target.value);
-                                                    handleUrlChange(e);
-                                                }}
-                                                onClick={(e) => e.target.focus()}
+                                                onChange={handleUrlChange}
                                                 onFocus={(e) => e.target.select()}
                                                 placeholder="Enter Image URL (e.g., https://example.com/image.jpg)"
                                                 className="url-input"
                                                 autoComplete="off"
                                                 spellCheck="false"
+                                                aria-label="Image URL input"
                                             />
                                             {urlError && (
                                                 <div className="url-error">
