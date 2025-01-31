@@ -147,27 +147,11 @@ function App() {
         const url = e.target.value;
         setImageUrl(url);
         setFile(null);
-        setUrlError('');
-
+        
         if (!url) {
             setPreview(null);
+            setUrlError('');
             return;
-        }
-
-        // Only validate and load preview if URL is complete
-        if (url.startsWith('http') && (url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.png') || url.endsWith('.gif'))) {
-            setUrlPreviewLoading(true);
-            const img = new Image();
-            img.onload = () => {
-                setPreview(url);
-                setUrlPreviewLoading(false);
-            };
-            img.onerror = () => {
-                setUrlError('Unable to load image from URL');
-                setPreview(null);
-                setUrlPreviewLoading(false);
-            };
-            img.src = url;
         }
     };
 
@@ -414,15 +398,13 @@ function App() {
                                             <label htmlFor="url-input" className="url-label">Image URL</label>
                                             <input
                                                 id="url-input"
+                                                name="url-input"
                                                 type="text"
+                                                inputMode="url"
                                                 value={imageUrl}
                                                 onChange={handleUrlChange}
-                                                onFocus={(e) => e.target.select()}
                                                 placeholder="Enter Image URL (e.g., https://example.com/image.jpg)"
                                                 className="url-input"
-                                                autoComplete="off"
-                                                spellCheck="false"
-                                                aria-label="Image URL input"
                                             />
                                             {urlError && (
                                                 <div className="url-error">
