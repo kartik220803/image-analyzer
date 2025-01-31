@@ -33,6 +33,8 @@ function App() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showVerifyPassword, setShowVerifyPassword] = useState(false);
     const [notifications, setNotifications] = useState([]);
+    const [urlPreviewLoading, setUrlPreviewLoading] = useState(false);
+    const [urlError, setUrlError] = useState('');
 
     const addNotification = (message, type = 'success') => {
         const id = Date.now();
@@ -141,11 +143,44 @@ function App() {
         }
     };
 
-    const handleUrlChange = (e) => {
+    const isValidImageUrl = (url) => {
+        return url.match(/\.(jpeg|jpg|gif|png)$/i) != null;
+    };
+
+    const handleUrlChange = async (e) => {
         const url = e.target.value;
         setImageUrl(url);
         setFile(null);
-        setPreview(url);
+        setUrlError('');
+
+        if (!url) {
+            setPreview(null);
+            return;
+        }
+
+        if (!isValidImageUrl(url)) {
+            setUrlError('Please enter a valid image URL (jpeg, jpg, gif, png)');
+            setPreview(null);
+            return;
+        }
+
+        setUrlPreviewLoading(true);
+        try {
+            // Test if the image loads successfully
+            await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = url;
+            });
+            setPreview(url);
+            setUrlError('');
+        } catch (error) {
+            setUrlError('Unable to load image from URL. Please check if the URL is correct.');
+            setPreview(null);
+        } finally {
+            setUrlPreviewLoading(false);
+        }
     };
 
     const handleDrop = (e) => {
@@ -388,13 +423,25 @@ function App() {
                                     
                                     <div className="url-input-container">
                                         <input
-                                            type="text"
+                                            type="url"
                                             value={imageUrl}
                                             onChange={handleUrlChange}
-                                            placeholder="Enter Image URL"
-                                            className="url-input"
+                                            placeholder="Enter Image URL (e.g., https://example.com/image.jpg)"
+                                            className={`url-input ${urlError ? 'error' : ''}`}
                                         />
-                                        {imageUrl && (
+                                        {urlError && (
+                                            <div className="url-error">
+                                                <span className="error-icon">⚠️</span>
+                                                {urlError}
+                                            </div>
+                                        )}
+                                        {urlPreviewLoading && (
+                                            <div className="url-preview-loading">
+                                                <span className="loading-icon">🔄</span>
+                                                Loading preview...
+                                            </div>
+                                        )}
+                                        {imageUrl && !urlError && !urlPreviewLoading && (
                                             <div className="url-preview">
                                                 <img src={imageUrl} alt="URL Preview" className="upload-preview" />
                                             </div>

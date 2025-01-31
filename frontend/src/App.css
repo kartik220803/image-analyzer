@@ -592,19 +592,80 @@ body {
     background: var(--card-background);
 }
 
+.url-input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .url-input {
     width: 100%;
-    padding: 0.8rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
     background: var(--background-color);
     color: var(--text-color);
-    margin-bottom: 1rem;
 }
 
 .url-input:focus {
     outline: none;
     border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+.url-input.error {
+    border-color: #ef4444;
+}
+
+.url-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ef4444;
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.url-preview-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    padding: 8px;
+}
+
+.url-preview-loading .loading-icon {
+    animation: spin 1s linear infinite;
+}
+
+.url-preview {
+    width: 100%;
+    max-width: 300px;
+    margin: 10px auto;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.url-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .analyze-btn {
