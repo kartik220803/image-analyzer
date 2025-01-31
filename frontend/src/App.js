@@ -426,14 +426,18 @@ function App() {
                                             <label htmlFor="url-input" className="url-label">Image URL</label>
                                             <input
                                                 id="url-input"
-                                                type="url"
+                                                type="text"
                                                 value={imageUrl}
-                                                onChange={handleUrlChange}
+                                                onChange={(e) => {
+                                                    setImageUrl(e.target.value);
+                                                    handleUrlChange(e);
+                                                }}
                                                 onClick={(e) => e.target.focus()}
                                                 onFocus={(e) => e.target.select()}
                                                 placeholder="Enter Image URL (e.g., https://example.com/image.jpg)"
-                                                className={`url-input ${urlError ? 'error' : ''}`}
+                                                className="url-input"
                                                 autoComplete="off"
+                                                spellCheck="false"
                                             />
                                             {urlError && (
                                                 <div className="url-error">
