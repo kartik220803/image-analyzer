@@ -480,6 +480,33 @@ app.post('/toggle-save/:id', auth, async (req, res) => {
     }
 });
 
+// Analyze image from URL endpoint
+app.post('/analyze-url', async (req, res) => {
+    try {
+        const { imageUrl } = req.body;
+        
+        if (!imageUrl) {
+            return res.status(400).json({ error: 'No image URL provided' });
+        }
+
+        // Download the image
+        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+        const imageBuffer = Buffer.from(response.data);
+
+        // Analyze the image
+        const results = await analyzeImage(imageBuffer);
+        
+        return res.json({
+            success: true,
+            imageUrl,
+            results
+        });
+    } catch (error) {
+        console.error('Error in URL analysis:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Check username availability
 app.get('/check-username/:username', async (req, res) => {
     try {

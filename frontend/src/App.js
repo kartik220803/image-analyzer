@@ -96,21 +96,31 @@ function App() {
         setError(null);
 
         try {
-            const formData = new FormData();
+            let response;
+            
             if (file) {
+                // Handle file upload
+                const formData = new FormData();
                 formData.append('image', file);
+
+                // Use anonymous endpoint if user is not logged in
+                const endpoint = user ? 'https://image-analyzer-b.vercel.app/upload' : 'https://image-analyzer-b.vercel.app/analyze-anonymous';
+                const headers = {
+                    'Content-Type': 'multipart/form-data',
+                    ...(user && { 'Authorization': `Bearer ${localStorage.getItem('token')}` })
+                };
+
+                response = await axios.post(endpoint, formData, { headers });
             } else {
-                formData.append('url', imageUrl);
+                // Handle URL-based analysis
+                const endpoint = 'https://image-analyzer-b.vercel.app/analyze-url';
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...(user && { 'Authorization': `Bearer ${localStorage.getItem('token')}` })
+                };
+
+                response = await axios.post(endpoint, { imageUrl }, { headers });
             }
-
-            // Use anonymous endpoint if user is not logged in
-            const endpoint = user ? 'https://image-analyzer-b.vercel.app/upload' : 'https://image-analyzer-b.vercel.app/analyze-anonymous';
-            const headers = {
-                'Content-Type': 'multipart/form-data',
-                ...(user && { 'Authorization': `Bearer ${localStorage.getItem('token')}` })
-            };
-
-            const response = await axios.post(endpoint, formData, { headers });
 
             // Handle different response structures for anonymous vs authenticated endpoints
             const analysisResults = user ? response.data : response.data.results;
@@ -120,7 +130,7 @@ function App() {
                 fetchHistory(); // Refresh history after successful upload
             }
         } catch (error) {
-            console.error('Upload error:', error);
+            console.error('Analysis error:', error);
             setError(error.response?.data?.error || 'Failed to analyze image');
         } finally {
             setLoading(false);
