@@ -122,8 +122,16 @@ function App() {
                 response = await axios.post(endpoint, { imageUrl }, { headers });
             }
 
-            // Handle different response structures for anonymous vs authenticated endpoints
-            const analysisResults = user ? response.data : response.data.results;
+            // Handle different response structures
+            let analysisResults;
+            if (response.data.results) {
+                // For anonymous and URL-based analysis
+                analysisResults = response.data.results;
+            } else {
+                // For authenticated file upload
+                analysisResults = response.data;
+            }
+            
             setResults(analysisResults);
             
             if (user) {

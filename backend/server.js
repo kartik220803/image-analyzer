@@ -480,7 +480,7 @@ app.post('/toggle-save/:id', auth, async (req, res) => {
     }
 });
 
-// Analyze image from URL endpoint
+// URL-based image analysis endpoint
 app.post('/analyze-url', async (req, res) => {
     try {
         const { imageUrl } = req.body;
@@ -495,6 +495,18 @@ app.post('/analyze-url', async (req, res) => {
 
         // Analyze the image
         const results = await analyzeImage(imageBuffer);
+
+        // If user is authenticated, save the analysis
+        if (req.user) {
+            const analysis = new Analysis({
+                userId: req.user.id,
+                imageUrl,
+                results,
+                isSaved: true
+            });
+            await analysis.save();
+            await cleanupOldAnalyses(req.user.id);
+        }
         
         return res.json({
             success: true,
